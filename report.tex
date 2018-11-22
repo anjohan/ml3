@@ -1,0 +1,194 @@
+\documentclass[11pt,british,a4paper]{article}
+%\pdfobjcompresslevel=0
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[includeheadfoot,margin=0.8 in]{geometry}
+\usepackage{siunitx,physics,cancel,upgreek,varioref,listings,booktabs,pdfpages,ifthen,polynom,todonotes}
+%\usepackage{minted}
+\usepackage[backend=biber]{biblatex}
+\DefineBibliographyStrings{english}{%
+      bibliography = {References},
+}
+\addbibresource{sources.bib}
+\usepackage{mathtools,upgreek,bigints}
+\usepackage{babel}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tocloft}
+\usepackage[T1]{fontenc}
+%\usepackage{fouriernc}
+% \usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+% \usepackage{inconsolata}
+%\usepackage{eulervm}
+%\usepackage{cmbright}
+%\usepackage{fontspec}
+%\usepackage{unicode-math}
+%\setmainfont{Tex Gyre Pagella}
+%\setmathfont{Tex Gyre Pagella Math}
+%\setmonofont{Tex Gyre Cursor}
+%\renewcommand*\ttdefault{txtt}
+\graphicspath{{figs/}}
+\usepackage[scaled]{beramono}
+\usepackage{fancyhdr}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{lastpage}
+\usepackage{microtype}
+\usepackage[font=normalsize]{subcaption}
+\usepackage{luacode}
+\usepackage[linktoc=all, bookmarks=true, pdfauthor={Anders Johansson},pdftitle={FYS-STK4155 Project 3}]{hyperref}
+\usepackage{tikz,pgfplots,pgfplotstable}
+\usepgfplotslibrary{colorbrewer}
+\usepgfplotslibrary{external}
+\tikzset{external/system call={lualatex \tikzexternalcheckshellescape -halt-on-error -interaction=batchmode -jobname "\image" "\texsource"}}
+\tikzexternalize%[prefix=tmp/, mode=list and make]
+\pgfplotsset{cycle list/Dark2}
+\pgfplotsset{compat=1.8}
+\pgfmathsetseed{12}
+\renewcommand{\CancelColor}{\color{red}}
+\let\oldexp=\exp
+\renewcommand{\exp}[1]{\mathrm{e}^{#1}}
+
+
+\labelformat{section}{#1}
+\labelformat{subsection}{section~#1}
+\labelformat{subsubsection}{paragraph~#1}
+\labelformat{equation}{equation~(#1)}
+\labelformat{figure}{figure~#1}
+\labelformat{table}{table~#1}
+
+\renewcommand{\footrulewidth}{\headrulewidth}
+
+%\setcounter{secnumdepth}{4}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{1em}
+
+\definecolor{bluekeywords}{rgb}{0.13,0.13,1}
+\definecolor{greencomments}{rgb}{0,0.5,0}
+\definecolor{redstrings}{rgb}{0.9,0,0}
+\lstset{rangeprefix=!/,
+    rangesuffix=/!,
+    includerangemarker=false}
+\lstset{showstringspaces=false,
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{bluekeywords},
+    commentstyle=\color{greencomments},
+    numberstyle=\color{bluekeywords},
+    stringstyle=\color{redstrings},
+    breaklines=true,
+    %texcl=true,
+    language=Fortran,
+    morekeywords={norm2,class,deferred}
+}
+\colorlet{DarkGrey}{white!20!black}
+\newcommand{\eqtag}[1]{\refstepcounter{equation}\tag{\theequation}\label{#1}}
+\hypersetup{hidelinks=True}
+
+\sisetup{detect-all}
+\sisetup{exponent-product = \cdot, output-product = \cdot,per-mode=symbol}
+% \sisetup{output-decimal-marker={,}}
+\sisetup{round-mode = off, round-precision=3}
+\sisetup{number-unit-product = \ }
+
+\allowdisplaybreaks[4]
+\fancyhf{}
+
+\rhead{Project 3}
+\rfoot{Page~\thepage{} of~\pageref{LastPage}}
+\lhead{FYS-STK4155}
+
+%\definecolor{gronn}{rgb}{0.29, 0.33, 0.13}
+\definecolor{gronn}{rgb}{0, 0.5, 0}
+
+\newcommand{\husk}[2]{\tikz[baseline,remember picture,inner sep=0pt,outer sep=0pt]{\node[anchor=base] (#1) {\(#2\)};}}
+\newcommand{\artanh}[1]{\operatorname{artanh}{\qty(#1)}}
+\newcommand{\matrise}[1]{\begin{pmatrix}#1\end{pmatrix}}
+\DeclareMathOperator{\Proj}{Proj}
+\DeclareMathOperator{\Col}{Col}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\MSE}{MSE}
+
+\newread\infile
+
+\setcounter{tocdepth}{2}
+\numberwithin{equation}{section}
+
+\pgfplotstableset{
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule},
+    columns/Method/.style={string type, column type=l}
+}
+
+\pgfplotsset{
+    tick align=outside,
+    tick pos=left,
+    xmajorgrids,
+    x grid style={white},
+    ymajorgrids,
+    y grid style={white},
+    axis line style={white},
+    axis background/.style={fill=white!89.803921568627459!black}
+}
+
+%start
+\begin{document}
+\tikzexternaldisable
+\title{FYS-STK4155: Project 3}
+\author{Anders Johansson}
+%\maketitle
+
+\begin{titlepage}
+%\includegraphics[width=\textwidth]{fysisk.pdf}
+\vspace*{\fill}
+\begin{center}
+\textsf{
+    \Huge \textbf{Project 3}\\\vspace{0.5cm}
+    \Large \textbf{FYS-STK4155 --- Applied data analysis and machine learning}\\
+    \vspace{8cm}
+    Anders Johansson\\
+    \today\\
+}
+\vspace{1.5cm}
+\includegraphics{uio.pdf}\\
+\vspace*{\fill}
+\end{center}
+\end{titlepage}
+\null
+\pagestyle{empty}
+\newpage
+
+\pagestyle{fancy}
+\setcounter{page}{1}
+
+\begin{abstract}
+    Differential equations.
+\end{abstract}
+\pagestyle{fancy}
+\thispagestyle{fancy}
+\tableofcontents
+
+\section{Introduction}
+Differential equations are an important tool in physics for understanding the world around us.
+
+%                                   _ _
+%   __ _ _ __  _ __   ___ _ __   __| (_)_  __
+%  / _` | '_ \| '_ \ / _ \ '_ \ / _` | \ \/ /
+% | (_| | |_) | |_) |  __/ | | | (_| | |>  <
+%  \__,_| .__/| .__/ \___|_| |_|\__,_|_/_/\_\
+%       |_|   |_|
+\clearpage
+\appendix
+\part*{Appendix}
+\addcontentsline{toc}{part}{Appendix}
+\renewcommand{\thesection}{\Alph{section}}
+\labelformat{section}{appendix~#1}
+\labelformat{subsection}{appendix~#1}
+
+
+\clearpage
+\nocite{*}
+\printbibliography{}
+\addcontentsline{toc}{section}{\bibname}
+\end{document}

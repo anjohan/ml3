@@ -315,6 +315,80 @@ where \(n(x,t)\) is the output from the neural network.
     \caption{Results from solving the diffusion equation with the Forward Euler finite difference scheme for two different values of \(\Delta x\) and \(\Delta t=\frac{1}{2}\Delta x^2\). While the solution for \(\Delta x=\num{0.02}\) deviates visibly from the analytic solution, \(\Delta x=\num{0.01}\) gives a good approximation to the analytic solution.}
 \end{figure}
 
+\subsection{Neural networks}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                thick,
+                width=\textwidth,
+                height=2.5in,
+                xlabel={\(x\)},
+                ylabel={\(u(x,t)\)},
+                legend style={draw=none,fill=none,at={(-0.01,1.03)}, anchor=north west},
+                legend cell align=left,
+                samples=100
+            ]
+                \addlegendentry{\(\exp{-\pi^2 t}\sin(\pi x)\)};
+                \addplot+[mark=none] table[y index=1] {data/nn_u_100.dat};
+                \addlegendentry{\(t=\num{0.0}\)};
+                \addplot+[mark=none] table[y index=2] {data/nn_u_100.dat};
+                \addlegendentry{\(t=\num{0.1}\)};
+                \addplot+[mark=none] table[y index=3] {data/nn_u_100.dat};
+                \addlegendentry{\(t=\num{0.2}\)};
+            \end{axis}
+        \end{tikzpicture}
+        \caption{\(\num{100}\) epochs}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                thick,
+                width=\textwidth,
+                height=2.5in,
+                xlabel={\(x\)},
+                ylabel={\(u(x,t)\)},
+                legend style={draw=none,fill=none,at={(0.98,0.98)}, anchor=north east},
+                legend cell align=left,
+            ]
+                \addplot+[mark=none] table[y index=1] {data/nn_u_10000.dat};
+                \addlegendentry{\(t=\num{0.0}\)};
+                \addplot+[mark=none] table[y index=2] {data/nn_u_10000.dat};
+                \addlegendentry{\(t=\num{0.1}\)};
+                \addplot+[mark=none] table[y index=3] {data/nn_u_10000.dat};
+                \addlegendentry{\(t=\num{0.2}\)};
+            \end{axis}
+        \end{tikzpicture}
+        \caption{\(\num{10000}\) epochs}
+    \end{subfigure}
+    \caption{Approximation to the solution of the diffusion equation provided by a neural network with \(6\) hidden layers with \(10\) nodes each. While the network gives horrible results after \(10\) epochs, the solution is seen to approach the analytic solution. As seen in~\vref{fig:nncost}, however, it seems that the minimisation may have found a local minimum.}
+\end{figure}
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            thick,
+            width=5in,
+            height=3in,
+            xmode=log,
+            ymode=log,
+            xlabel={Epochs},
+            ylabel={Error},
+            legend style={draw=none, fill=none, at={(0.98,0.98)}, anchor=north east},
+            legend cell align=left
+        ]
+            \addplot+[mark=none] table[y index=1] {data/nn_cost.dat};
+            \addlegendentry{\(\norm{\pdv{u}{t}-\pdv[2]{u}{x}}_2^2\)};
+            \addplot+[mark=none] table[y index=2] {data/nn_cost.dat};
+            \addlegendentry{\(\norm{u - u_\text{exact}}_2\)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{The error in the neural network's approximation, both in terms of the cost function defined as the difference between the two sides of the diffusion equation and the deviation from the known, exact solution. While the cost function is eventually reduced, the graphs indicate that the minimiser may be stuck in a local minimum. It is therefore clearly advantageous to do a parameter search and try different architectures and minimisers.}\label{fig:nncost}
+\end{figure}
+
 
 
 %                                   _ _

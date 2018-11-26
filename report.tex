@@ -162,7 +162,7 @@
 \setcounter{page}{1}
 
 \begin{abstract}
-    This report deals with the numerical solution of the one-dimensional diffusion equation. The traditional Forward Euler scheme is compared with the novel approach of using neural networks. Tensorflow is used for the neural network due to its ability to handle cost functions defined in terms of the derivatives of the neural network's output with respect to its input. While Forward Euler performed better both in terms of accuracy and runtime, the neural networks also showed promising results. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best, and the number of nodes per layer proved more important than the number layers, as shown by the three best architectures being \((100,100,100)\), \((100,100)\) and \((10,10,10,10,10)\) nodes in the hidden layers.
+    This report deals with the numerical solution of the one-dimensional diffusion equation. The traditional Forward Euler scheme is compared with the novel approach of using neural networks. Tensorflow is used for the neural network due to its ability to handle cost functions defined in terms of the derivatives of the neural network's output with respect to its input. While Forward Euler performed better both in terms of accuracy and runtime, the neural networks also showed promising results. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best, and the number of nodes per layer proved more important than the number of layers, as shown by the three best architectures being \((100,100,100)\), \((100,100)\) and \((10,10,10,10,10)\) nodes in the hidden layers.
 \end{abstract}
 \pagestyle{fancy}
 \thispagestyle{fancy}
@@ -243,7 +243,7 @@ The simplest approach is simply to use the square of the difference between the 
 \begin{equation}
     Q = \qty(\pdv{u}{t} - \pdv[2]{u}{x})^2.
 \end{equation}
-It seems difficult to differentiate this cost function with respect to the weights and biases of the neural network. I have therefore chosen to use Tensorflow for this project, since it contains functionality for calculating automatic derivatives (something my otherwise brilliant Fortran network lacks).
+It seems difficult to differentiate this cost function with respect to the weights and biases of the neural network. I have therefore chosen to use Tensorflow\cite{tensorflow} for this project, since it contains functionality for calculating automatic derivatives (something my otherwise brilliant Fortran network lacks).
 
 Another difficulty is to fulfill the initial and boundary conditions. One approach may be to add terms to the cost function which penalise approximations which do not fulfill the initial and boundary conditions. Another approach, which is found more often in literature\cite{nnde} and therefore employed in this report, is to not use the output of the neural network directly, but rather combining a neural network with other functions in such a way that the initial and boundary conditions are guaranteed to be fulfilled.
 
@@ -287,7 +287,7 @@ where \(n(x,t)\) is the output from the neural network.
                 \addplot+[mark=none, gray, domain=0:1] {exp(-pi*pi*0.1)*sin(deg(pi*x))};
             \end{axis}
         \end{tikzpicture}
-        \caption{\(\Delta x=\num{2e-1}\)}
+        \caption{\(\Delta x=\num{0.2}\)}
     \end{subfigure}
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -309,9 +309,9 @@ where \(n(x,t)\) is the output from the neural network.
                 \addlegendentry{\(t=\num{0.2}\)};
             \end{axis}
         \end{tikzpicture}
-        \caption{\(\Delta x=\num{1e-2}\)}
+        \caption{\(\Delta x=\num{0.01}\)}
     \end{subfigure}
-    \caption{Results from solving the diffusion equation with the Forward Euler finite difference scheme for two different values of \(\Delta x\) and \(\Delta t=\frac{1}{2}\Delta x^2\). While the solution for \(\Delta x=\num{0.02}\) deviates visibly from the analytic solution, \(\Delta x=\num{0.01}\) gives a good approximation to the analytic solution.}
+    \caption{Results from solving the diffusion equation with the Forward Euler finite difference scheme for two different values of \(\Delta x\) and \(\Delta t=\frac{1}{2}\Delta x^2\). While the solution for \(\Delta x=\num{0.2}\) deviates visibly from the analytic solution, \(\Delta x=\num{0.01}\) gives a good approximation.}
 \end{figure}
 
 \subsection{Neural networks}
@@ -380,19 +380,19 @@ where \(n(x,t)\) is the output from the neural network.
             legend cell align=left
         ]
             \addplot+[mark=none] table[y index=1] {data/nn_cost.dat};
-            \addlegendentry{\(\norm{\pdv{u}{t}-\pdv[2]{u}{x}}_2^2\)};
+            \addlegendentry{\(\frac{1}{N_xN_t}\norm{\pdv{u}{t}-\pdv[2]{u}{x}}_2^2\)};
             \addplot+[mark=none] table[y index=2] {data/nn_cost.dat};
-            \addlegendentry{\(\norm{u - u_\text{exact}}_2\)};
+            \addlegendentry{\(\frac{1}{N_xN_t}\norm{u - u_\text{exact}}_2\)};
         \end{axis}
     \end{tikzpicture}
-    \caption{The error in the neural network's approximation, both in terms of the cost function defined as the difference between the two sides of the diffusion equation and the deviation from the known, exact solution. While the cost function is eventually reduced, the graphs indicate that the minimiser may be stuck in a local minimum. It is therefore clearly advantageous to do a parameter search and try different architectures and minimisers.}\label{fig:nncost}
+    \caption{The error in the neural network's approximation, both in terms of the cost function defined as the squared difference between the two sides of the diffusion equation and the deviation from the known, exact solution. While the cost function is eventually reduced, the graphs indicate that the minimiser may be stuck in a local minimum. It is therefore clearly advantageous to do a parameter search and try different architectures and minimisers.}\label{fig:nncost}
 \end{figure}
 
 \subsubsection{Parameter sweep}
 Simulations similar to the ones above were run for a variety of combinations of activation functions, optimisers and network architectures. The best results (defined as having the smallest cost) are shown below.
 \begin{table}[H]
     \centering
-    \caption{Best choices of parameters, defined as giving the smallest cost function after \(\num{10000}\) epochs (``Error'' denotes the devition from the analytic solution). Approximately \(\num{1000}\) parameter combinations were tested. Adam denotes the \lstinline{tf.train.AdamOptimizer} with default parameters, which uses an adaptive learning rate \(\alpha\) and momentum \(\gamma\), thereby outperforming batch gradient descent with fixed learning rate and momentum. The architecture gives the numbers of nodes in the hidden layers.}
+    \caption{Best choices of parameters, defined as giving the smallest cost function after \(\num{10000}\) epochs (``Error'' denotes the deviation from the analytic solution). Approximately \(\num{1000}\) parameter combinations were tested. Adam denotes the \lstinline{tf.train.AdamOptimizer} with default parameters, which uses an adaptive learning rate \(\alpha\) and momentum \(\gamma\), thereby outperforming batch gradient descent with fixed learning rate and momentum. The architecture gives the numbers of nodes in the hidden layers. More results are available at \href{https://github.com/anjohan/ml3/tree/master/data}{github.com/anjohan/ml3/data}.}
     \pgfplotstabletypeset[
             columns/{Activation function}/.style={string type},
             columns/{Optimiser}/.style={string type},
@@ -401,7 +401,22 @@ Simulations similar to the ones above were run for a variety of combinations of 
         ]
         {data/nn_cost_table_small.dat}
 \end{table}
+%                                                                   _
+%  ___ _   _ _ __ ___  _ __ ___   __ _ _ __ _   _    __ _ _ __   __| |
+% / __| | | | '_ ` _ \| '_ ` _ \ / _` | '__| | | |  / _` | '_ \ / _` |
+% \__ \ |_| | | | | | | | | | | | (_| | |  | |_| | | (_| | | | | (_| |
+% |___/\__,_|_| |_| |_|_| |_| |_|\__,_|_|   \__, |  \__,_|_| |_|\__,_|
+%                       _           _       |___/
+%   ___ ___  _ __   ___| |_   _ ___(_) ___  _ __
+%  / __/ _ \| '_ \ / __| | | | / __| |/ _ \| '_ \
+% | (_| (_) | | | | (__| | |_| \__ \ | (_) | | | |
+%  \___\___/|_| |_|\___|_|\__,_|___/_|\___/|_| |_|
+\section{Summary and conclusion}
+The one-dimensional diffusion equation was solved with both the traditional Forward Euler scheme and the more novel approach of using neural networks. While the neural networks converged towards the analytic solution, they were clearly beaten by Euler's method, which performed better in terms of both of accuracy and runtime. The main conclusion is, as in the previous project, to use specialised methods whenever possible, while neural networks can offer an acceptable solution which does not require much knowledge from the user --- especially when using a library as powerful as Tensorflow.
 
+A parameter sweep was performed in order to find the optimal solution of activation functions, optimisers and network architectures. Results showed that networks with fewer layers with more nodes performed better than deeper networks with fewer nodes per layer. The networks performed best when using the hyperbolic tangent as activation function and the Adam optimiser, with its adaptive learning rate and momentum.
+
+A simple extension of this project would be to try more parameter combinations, and deeper neural networks or networks with more nodes per layer. Performance issues will be mitigated if these simulations are run on a GPU.\ More substantial extensions include for example other network types, as the approximation of \(u(x,t)\) is similar to an image problem and may therefore benefit from a convolutional neural network.
 
 %                                   _ _
 %   __ _ _ __  _ __   ___ _ __   __| (_)_  __
@@ -409,13 +424,13 @@ Simulations similar to the ones above were run for a variety of combinations of 
 % | (_| | |_) | |_) |  __/ | | | (_| | |>  <
 %  \__,_| .__/| .__/ \___|_| |_|\__,_|_/_/\_\
 %       |_|   |_|
-\clearpage
-\appendix
-\part*{Appendix}
-\addcontentsline{toc}{part}{Appendix}
-\renewcommand{\thesection}{\Alph{section}}
-\labelformat{section}{appendix~#1}
-\labelformat{subsection}{appendix~#1}
+%\clearpage
+%\appendix
+%\part*{Appendix}
+%\addcontentsline{toc}{part}{Appendix}
+%\renewcommand{\thesection}{\Alph{section}}
+%\labelformat{section}{appendix~#1}
+%\labelformat{subsection}{appendix~#1}
 
 
 \clearpage

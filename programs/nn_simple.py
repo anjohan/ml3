@@ -41,7 +41,7 @@ u = tf.sin(pi*x_tf) + t_tf*x_tf*(1-x_tf)*n
 dudx, dudt = tf.gradients(u, [x_tf, t_tf])
 dudx2 = tf.gradients(dudx, [x_tf])[0]
 
-cost = tf.math.reduce_sum((dudx2 - dudt)**2)
+cost = tf.math.reduce_mean((dudx2 - dudt)**2)
 minimiser = tf.train.AdadeltaOptimizer(1.0)
 minimisation = minimiser.minimize(cost)
 print(dudx2)
@@ -60,7 +60,7 @@ with tf.Session() as s:
     for i in trange(1,int(max_epochs/10)+1):
         for j in range(10):
             s.run(minimisation)
-        error = np.linalg.norm(s.run(u)-u_exact)
+        error = np.linalg.norm(s.run(u)-u_exact)/len(u_exact)
         cost_file.write("%d %g %g\n" % (10*i, s.run(cost), error))
         if i==10 or i==max_epochs/10:
             u_np = s.run(u)

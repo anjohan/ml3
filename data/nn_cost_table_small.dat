@@ -14,8 +14,3 @@ tanh Adam 10,10,10 4.39969 7.11849
 relu Adam 10,10,10,10,10,10,10,10 5.38167 7.06194
 relu Adam 100,10,10 5.48597 7.09661
 tanh Adam 10,10,10,10,10,10,10 6.1486 7.11108
-relu Adam 100,100 6.19375 7.13093
-relu Adam 10,10,10,10,10,10,10 6.76863 7.28845
-tanh $\alpha=\num[scientific-notation=true]{0.0001},\gamma=\num[scientific-notation=true]{0.00001}$ 100,100,100 7.87827 6.57929
-tanh $\alpha=\num[scientific-notation=true]{0.0001},\gamma=\num[scientific-notation=true]{0.01}$ 100,100,100 8.09206 6.58003
-relu Adam 10,10,10,10,10 8.10602 7.09828

@@ -1,0 +1,28 @@
+activation_functions = sigmoid relu tanh
+learning_rates = 0.00001 0.0001 0.001 0.01 0.1
+momentums = 0.00001 0.0001 0.001 0.01 0.1
+
+optimisers = $(foreach learning_rate,$(learning_rates),\
+			   $(foreach momentum,$(momentums),\
+			     $(learning_rate),$(momentum))) Adam
+
+architectures = 10 10,10 10,10,10 10,10,10,10 10,10,10,10,10 10,10,10,10,10,10 \
+				10,10,10,10,10,10,10 10,10,10,10,10,10,10,10 \
+				1000 100 100,100 100,10,10 10,100,10 10,10,100 100,100,100
+
+$(foreach optimiser,$(optimisers),$(info $(optimiser)))
+$(foreach architecture,$(architectures),$(info $(architecture)))
+
+single_costs = $(foreach activation_function,$(activation_functions),\
+			     $(foreach optimiser,$(optimisers),\
+				   $(foreach architecture,$(architectures),\
+				     data/nn_cost_$(activation_function)_$(optimiser)_$(architecture).dat)))
+$(foreach single_cost,$(single_costs),$(info $(single_cost)))
+
+all: data/nn_costs.dat
+
+data/nn_costs.dat: $(single_costs)
+	cat $^ > $@
+
+data/nn_cost_%.dat: programs/nn_params.py
+	python $< $*

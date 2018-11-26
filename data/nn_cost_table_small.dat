@@ -1,0 +1,21 @@
+{Activation function} Optimiser Architecture Cost Error
+tanh Adam 100,100,100 0.180569 7.11726
+tanh Adam 100,100 1.34211 7.11649
+tanh Adam 10,10,10,10,10 1.6975 7.11772
+tanh Adam 10,10,100 1.83235 7.12031
+tanh Adam 10,10,10,10,10,10 2.14751 7.11766
+tanh Adam 10,10,10,10 2.67521 7.11626
+relu Adam 100,100,100 3.08659 7.46385
+tanh Adam 100,10,10 3.20202 7.22173
+relu $\alpha=\num[scientific-notation=true]{0.0001},\gamma=\num[scientific-notation=true]{0.01}$ 100,100,100 3.30106 7.26309
+tanh Adam 10,100,10 3.3951 7.11349
+tanh $\alpha=\num[scientific-notation=true]{0.0001},\gamma=\num[scientific-notation=true]{0.1}$ 100,100,100 3.83585 6.73973
+tanh Adam 10,10,10 4.39969 7.11849
+relu Adam 10,10,10,10,10,10,10,10 5.38167 7.06194
+relu Adam 100,10,10 5.48597 7.09661
+tanh Adam 10,10,10,10,10,10,10 6.1486 7.11108
+relu Adam 100,100 6.19375 7.13093
+relu Adam 10,10,10,10,10,10,10 6.76863 7.28845
+tanh $\alpha=\num[scientific-notation=true]{0.0001},\gamma=\num[scientific-notation=true]{0.00001}$ 100,100,100 7.87827 6.57929
+tanh $\alpha=\num[scientific-notation=true]{0.0001},\gamma=\num[scientific-notation=true]{0.01}$ 100,100,100 8.09206 6.58003
+relu Adam 10,10,10,10,10 8.10602 7.09828

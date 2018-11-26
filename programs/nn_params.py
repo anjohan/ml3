@@ -5,42 +5,27 @@ from tqdm import trange
 import tensorflow as tf
 import numpy as np
 from math import pi
+import sys
 
+input = sys.argv[1]
 
-# ===== Values for parameter sweep ===== #
-activation_functions = [
-    (tf.nn.sigmoid, "sigmoid"),
-    (tf.nn.relu, "relu"),
-    (tf.nn.tanh, "tanh"),
-]
-learning_rates = [10 ** i for i in range(-4, 1)]
-momentums = [0] + [10 ** i for i in range(-4, 1)]
+activation, optimiser, architecture = input.split("_")
 
-optimisers = [
-    tf.train.MomentumOptimizer(learning_rate, momentum)
-    for learning_rate in learning_rates
-    for momentum in momentums
-] + [tf.train.AdamOptimizer()]
+activation = eval("tf.nn." + activation)
 
-optimiser_names = [
-    r"$\alpha=\num{%g},\gamma=\num{%g}$" % (learning_rate, momentum)
-    for learning_rate in learning_rates
-    for momentum in momentums
-] + ["Adam"]
-architectures = [[10 for i in range(N)] for N in range(1, 8)] + [
-    [1000],
-    [100],
-    [100, 100],
-    [100, 10, 10],
-    [10, 100, 10],
-    [10, 10, 100],
-]
+if optimiser == "Adam":
+    optimiser = tf.train.AdamOptimizer()
+else:
+    learning_rate, momentum = eval(optimiser)
+    optimiser = tf.train.MomentumOptimizer(learning_rate, momentum)
 
-num_activations = len(activation_functions)
-num_optimisers = len(optimisers)
-num_architectures = len(architectures)
+architecture = eval(architecture)
 
-# ====================================== #
+if not isinstance(architecture, tuple):
+    architecture = [architecture]
+
+# print(activation, optimiser, architecture)
+# sys.exit()
 
 # ===== Input data ===== #
 dx = 0.05
@@ -67,53 +52,35 @@ u_exact = tf.exp(-pi ** 2 * t_tf) * tf.sin(pi * x_tf)
 data = tf.convert_to_tensor(data)
 # ======================= #
 
+# Feed forward network:
+previous = data
+for num_nodes in architecture:
+    previous = tf.layers.dense(previous, num_nodes, activation=activation)
 
-outfile = open("data/nn_raw_table.dat", "w")
-outfile.write("# Activation Optimiser Architecture Cost Error\n")
+n = tf.layers.dense(previous, 1)
+u = tf.sin(pi * x_tf) + t_tf * x_tf * (1 - x_tf) * n
 
-# ===== Parameter sweep ===== #
-for i in trange(num_activations, desc="Activation functions:"):
-    activation, activation_name = activation_functions[i]
-    for j in trange(num_optimisers, desc="Optimisers:"):
-        optimiser = optimisers[j]
-        for k in trange(num_architectures, desc="Architectures:"):
-            architecture = architectures[k]
+dudx, dudt = tf.gradients(u, [x_tf, t_tf])
+dudx2 = tf.gradients(dudx, [x_tf])[0]
 
-            # Feed forward network:
-            previous = data
-            for num_nodes in architecture:
-                previous = tf.layers.dense(previous, num_nodes, activation=activation)
+cost = tf.math.reduce_sum((dudx2 - dudt) ** 2)
+minimisation = optimiser.minimize(cost)
 
-            n = tf.layers.dense(previous, 1)
-            u = tf.sin(pi * x_tf) + t_tf * x_tf * (1 - x_tf) * n
+error = tf.math.reduce_sum((u - u_exact) ** 2)
 
-            dudx, dudt = tf.gradients(u, [x_tf, t_tf])
-            dudx2 = tf.gradients(dudx, [x_tf])[0]
+init = tf.global_variables_initializer()
+with tf.Session() as s:
+    s.run(init)
+    for _ in trange(10000, desc="Epochs:"):
+        s.run(minimisation)
 
-            cost = tf.math.reduce_sum((dudx2 - dudt) ** 2)
-            minimisation = optimiser.minimize(cost)
-
-            error = tf.math.reduce_sum((u - u_exact) ** 2)
-
-            init = tf.global_variables_initializer()
-            # """
-            with tf.Session() as s:
-                s.run(init)
-                # """
-                for _ in trange(10000, desc="Epochs:"):
-                    s.run(minimisation)
-
-                outfile.write(
-                    "%s %s %s %g %g\n"
-                    % (
-                        activation_name,
-                        optimiser_names[j],
-                        str(architecture).replace(" ", ""),
-                        s.run(cost),
-                        s.run(error),
-                    )
-                )
-                # """
-            # """
-outfile.close()
-# =========================== #
+    with open("data/nn_cost_" + input + ".dat", "w") as outfile:
+        outfile.write(
+            " ".join(input.split("_")) + " %g %g\n" % (s.run(cost), s.run(error))
+        )
+    u = s.run(u)
+    Nx += 1
+    Nt += 1
+    u = u.reshape((Nx, Nt))
+    output = np.column_stack((np.arange(Nx) * dx, u[:, 0], u[:, int(Nt / 2)], u[:, -1]))
+    np.savetxt("data/nn_u_%s.dat" % input, output)

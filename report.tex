@@ -117,8 +117,7 @@
 
 \pgfplotstableset{
     every head row/.style={before row=\toprule,after row=\midrule},
-    every last row/.style={after row=\bottomrule},
-    columns/Method/.style={string type, column type=l}
+    every last row/.style={after row=\bottomrule}
 }
 
 \pgfplotsset{
@@ -163,7 +162,7 @@
 \setcounter{page}{1}
 
 \begin{abstract}
-    Differential equations.
+    This report deals with the numerical solution of the one-dimensional diffusion equation. The traditional Forward Euler scheme is compared with the novel approach of using neural networks. Tensorflow is used for the neural network due to its ability to handle cost functions defined in terms of the derivatives of the neural network's output with respect to its input. While Forward Euler performed better both in terms of accuracy and runtime, the neural networks also showed promising results. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best, and the number of nodes per layer proved more important than the number layers, as shown by the three best architectures being \((100,100,100)\), \((100,100)\) and \((10,10,10,10,10)\) nodes in the hidden layers.
 \end{abstract}
 \pagestyle{fancy}
 \thispagestyle{fancy}
@@ -218,7 +217,7 @@ The simplest approximations to numerical derivatives which can be inserted in th
     \pdv{u(x,t)}{t} \approx \frac{u(x,t+\Delta t) - u(x,t)}{\Delta t}, \qquad
     \pdv[2]{u(x,t)}{x} \approx \frac{u(x+\Delta x, t) - 2u(x,t) + u(x-\Delta x,t)}{\Delta x^2}.
 \end{equation}
-Discretising with \(x_i=i\Delta x\) for \(i=0,\ldots,N_x\) with \(\Delta x=1/N_x\), \(t^j=j\Delta t\) for \(j=0,\ldots,N_t\) with \(\Delta t=1/N_t\) and \(u_i^j = u(x_i,t^j)\), the diffusion equation with these approximations is
+Discretising with \(x_i=i\Delta x\) for \(i=0,\ldots,N_x\) with \(\Delta x=1/N_x\), \(t^j=j\Delta t\) for \(j=0,\ldots,N_t\) with \(\Delta t=T/N_t\) and \(u_i^j = u(x_i,t^j)\), the diffusion equation with these approximations is
 \begin{equation}
     \frac{u_i^{j+1} - u_i^j}{\Delta t} = \frac{u_{i+1}^j - 2u_i^j + u_{i-1}^j}{\Delta x^2}
 \end{equation}
@@ -389,6 +388,19 @@ where \(n(x,t)\) is the output from the neural network.
     \caption{The error in the neural network's approximation, both in terms of the cost function defined as the difference between the two sides of the diffusion equation and the deviation from the known, exact solution. While the cost function is eventually reduced, the graphs indicate that the minimiser may be stuck in a local minimum. It is therefore clearly advantageous to do a parameter search and try different architectures and minimisers.}\label{fig:nncost}
 \end{figure}
 
+\subsubsection{Parameter sweep}
+Simulations similar to the ones above were run for a variety of combinations of activation functions, optimisers and network architectures. The best results (defined as having the smallest cost) are shown below.
+\begin{table}[H]
+    \centering
+    \caption{Best choices of parameters, defined as giving the smallest cost function after \(\num{10000}\) epochs (``Error'' denotes the devition from the analytic solution). Approximately \(\num{1000}\) parameter combinations were tested. Adam denotes the \lstinline{tf.train.AdamOptimizer} with default parameters, which uses an adaptive learning rate \(\alpha\) and momentum \(\gamma\), thereby outperforming batch gradient descent with fixed learning rate and momentum. The architecture gives the numbers of nodes in the hidden layers.}
+    \pgfplotstabletypeset[
+            columns/{Activation function}/.style={string type},
+            columns/{Optimiser}/.style={string type},
+            columns/{Architecture}/.style={string type},
+            fixed zerofill, precision=1
+        ]
+        {data/nn_cost_table_small.dat}
+\end{table}
 
 
 %                                   _ _

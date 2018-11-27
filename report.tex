@@ -162,7 +162,7 @@
 \setcounter{page}{1}
 
 \begin{abstract}
-    This report deals with the numerical solution of the one-dimensional diffusion equation. The traditional Forward Euler scheme is compared with the novel approach of using neural networks. Tensorflow is used for the neural network due to its ability to handle cost functions defined in terms of the derivatives of the neural network's output with respect to its input. While Forward Euler performed better both in terms of accuracy and runtime, the neural networks also showed promising results. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best, and the number of nodes per layer proved more important than the number of layers, as shown by the three best architectures being \((100,100,100)\), \((100,100)\) and \((10,10,10,10,10)\) nodes in the hidden layers.
+    This report deals with the numerical solution of the one-dimensional diffusion equation. The traditional Forward Euler scheme is compared with the novel approach of using neural networks. Tensorflow is used for the neural network due to its ability to handle cost functions defined in terms of the derivatives of the neural network's output with respect to its input. While Forward Euler performed better both in terms of accuracy and runtime, the neural networks also showed promising results, giving a mean squared deviation between the two sides of the diffusion equation on the order of \(10^{-3}\) after \(\num{10000}\) epochs. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best, and the number of nodes per layer proved more important than the number of layers, as shown by the three best architectures being \((100,100,100)\), \((100,100)\) and \((10,10,10,10,10)\) nodes in the hidden layers.
 \end{abstract}
 \pagestyle{fancy}
 \thispagestyle{fancy}
@@ -170,6 +170,7 @@
 \pagestyle{fancy}
 \thispagestyle{fancy}
 
+\clearpage
 %  _       _                 _            _   _
 % (_)_ __ | |_ _ __ ___   __| |_   _  ___| |_(_) ___  _ __
 % | | '_ \| __| '__/ _ \ / _` | | | |/ __| __| |/ _ \| '_ \
@@ -178,7 +179,7 @@
 \section{Introduction}
 Differential equations are an important tool in physics for understanding the world around us. Classical motion is determined by Newton's laws of motion, which are ordinary differential equations, while relativistic motion and quantum mechanics are summarised in partial differential equations. Unfortunately, differential equations are hard to solve analytically, and numerical techniques are therefore employed. Historically, finite difference and finite element schemes have been used with great success. This report utilises a new approach, namely artificial neural networks, and compares it with a simple finite difference scheme.
 
-Artificial neural networks are used to solve the diffusion equation, which models such important phenomena as heat dissipation and diffusion. Tensorflow, Google's leading framework for machine learning and artificial intelligence, is used as a high-level, intuitive, ``black box'' approach. The results are compared to the simplest finite difference scheme, namely Forward Euler.
+Artificial neural networks are used to solve the diffusion equation, which models such important phenomena as heat dissipation and diffusion. Tensorflow, Google's leading framework for machine learning and artificial intelligence, is used for a high-level, intuitive, ``black box'' approach. The results are compared to the simplest finite difference scheme, namely Forward Euler.
 
 Since the main theory of neural networks was derived in an earlier project, this report mainly revolves around their application to neural networks. First, however, the report starts off with a derivation of the finite difference scheme with which the neural network is compared, before going through the details of how to use neural networks for solving differential equations. Both methods are then applied to the diffusion equation and their results are compared.
 
@@ -198,7 +199,7 @@ The standard diffusion equation is
 \begin{equation}
     \pdv{u}{t} = \nabla^2 u, \quad \text{or, in one dimension,}\quad \pdv{u}{t} = \pdv[2]{u}{x},
 \end{equation}
-for \(x\in\qty[0,1]\) and \(t\geq0\). In this project, the initial and boundary conditions are
+for \(x\in\qty[0,1]\) and \(t\in\qty[0,T]\). In this project, the initial and boundary conditions are
 \begin{equation}
     u(x,0) = \sin(\pi x), \qquad u(0,t) = u(1,t) = 0.
 \end{equation}
@@ -239,13 +240,13 @@ so \(\Delta t = \tfrac{1}{2}\Delta x^2\) is used.
 \subsection{Neural networks for differential equations}
 A neural network can approximate any function, and it should therefore also be able to approximate the solution of a differential equation such as the diffusion equation. The neural network approximates by minimising a cost function, and the challenge is therefore to find a suitable cost function.
 
-The simplest approach is simply to use the square of the difference between the two sides of the diffusion equation as the cost function,
+The simplest approach is simply to use the average square of the difference between the two sides of the diffusion equation as the cost function,
 \begin{equation}
-    Q = \qty(\pdv{u}{t} - \pdv[2]{u}{x})^2.
+    Q = \frac{1}{N_xN_t}\qty(\pdv{u}{t} - \pdv[2]{u}{x})^2.
 \end{equation}
 It seems difficult to differentiate this cost function with respect to the weights and biases of the neural network. I have therefore chosen to use Tensorflow\cite{tensorflow} for this project, since it contains functionality for calculating automatic derivatives (something my otherwise brilliant Fortran network lacks).
 
-Another difficulty is to fulfill the initial and boundary conditions. One approach may be to add terms to the cost function which penalise approximations which do not fulfill the initial and boundary conditions. Another approach, which is found more often in literature\cite{nnde} and therefore employed in this report, is to not use the output of the neural network directly, but rather combining a neural network with other functions in such a way that the initial and boundary conditions are guaranteed to be fulfilled.
+Another difficulty is to fulfill the initial and boundary conditions. One approach may be to add terms to the cost function which penalise approximations which do not fulfill the initial and boundary conditions. Another approach, which is found more often in literature\cite{nnde} and therefore employed in this report, is to not use the output of the neural network directly, but rather to combine a neural network with other functions in such a way that the initial and boundary conditions are guaranteed to be fulfilled.
 
 In the case of the diffusion equation with our set of conditions, a natural choice is
 \begin{equation}
@@ -363,7 +364,7 @@ where \(n(x,t)\) is the output from the neural network.
         \end{tikzpicture}
         \caption{\(\num{10000}\) epochs}
     \end{subfigure}
-    \caption{Approximation to the solution of the diffusion equation provided by a neural network with \(6\) hidden layers with \(10\) nodes each. While the network gives horrible results after \(10\) epochs, the solution is seen to approach the analytic solution. As seen in~\vref{fig:nncost}, however, it seems that the minimisation may have found a local minimum.}
+    \caption{Approximation to the solution of the diffusion equation provided by a neural network with \(6\) hidden layers with \(10\) nodes each. While the network gives horrible results after \(10\) epochs, the solution is seen to approach the analytic solution. As indicated in~\vref{fig:nncost}, however, it seems that the minimisation may have found a local minimum.}
 \end{figure}
 \begin{figure}
     \centering
@@ -389,10 +390,10 @@ where \(n(x,t)\) is the output from the neural network.
 \end{figure}
 
 \subsubsection{Parameter sweep}
-Simulations similar to the ones above were run for a variety of combinations of activation functions, optimisers and network architectures. The best results (defined as having the smallest cost) are shown below.
+Simulations similar to the ones above were run for a variety of combinations of activation functions, optimisers and network architectures. The best results (defined as having the smallest cost) are shown below. The Adam optimiser, with adaptive learning rates and momenta, clearly outperforms batch gradient descent, while the rectified linear unit and hyperbolic tangent give better results than the sigmoid function. Furthermore, it is clear that the breadth of the neural network is more important than the depth as long as the network is sufficiently deep, as shown by the networks with \((100,100,100)\) and \((100,100)\) nodes in the hidden layers performing better than networks with \((10,10,10,10,10,10,10,10)\) or \((1000)\) nodes.
 \begin{table}[H]
     \centering
-    \caption{Best choices of parameters, defined as giving the smallest cost function after \(\num{10000}\) epochs (``Error'' denotes the deviation from the analytic solution). Approximately \(\num{1000}\) parameter combinations were tested. Adam denotes the \lstinline{tf.train.AdamOptimizer} with default parameters, which uses an adaptive learning rate \(\alpha\) and momentum \(\gamma\), thereby outperforming batch gradient descent with fixed learning rate and momentum. The architecture gives the numbers of nodes in the hidden layers. More results are available at \href{https://github.com/anjohan/ml3/tree/master/data}{github.com/anjohan/ml3/data}.}
+    \caption{Best choices of parameters, defined as giving the smallest cost function after \(\num{10000}\) epochs (``Error'' denotes the average squared deviation from the analytic solution). \(\num{1170}\) parameter combinations were tested. Adam denotes the \lstinline{tf.train.AdamOptimizer} with default parameters, which uses an adaptive learning rate \(\alpha\) and momentum \(\gamma\), thereby outperforming batch gradient descent with fixed learning rate and momentum. The architecture gives the numbers of nodes in the hidden layers. More results are available at \href{https://github.com/anjohan/ml3/tree/master/data}{github.com/anjohan/ml3/data}.}
     \pgfplotstabletypeset[
             columns/{Activation function}/.style={string type},
             columns/{Optimiser}/.style={string type},
@@ -433,7 +434,7 @@ A simple extension of this project would be to try more parameter combinations, 
 %\labelformat{subsection}{appendix~#1}
 
 
-\clearpage
+%\clearpage
 \nocite{*}
 \printbibliography{}
 \addcontentsline{toc}{section}{\bibname}

@@ -63,10 +63,10 @@ u = tf.sin(pi * x_tf) + t_tf * x_tf * (1 - x_tf) * n
 dudx, dudt = tf.gradients(u, [x_tf, t_tf])
 dudx2 = tf.gradients(dudx, [x_tf])[0]
 
-cost = tf.math.reduce_sum((dudx2 - dudt) ** 2)
+cost = tf.math.reduce_mean((dudx2 - dudt) ** 2)
 minimisation = optimiser.minimize(cost)
 
-error = tf.math.reduce_sum((u - u_exact) ** 2)
+error = tf.math.reduce_mean((u - u_exact) ** 2)
 
 init = tf.global_variables_initializer()
 with tf.Session() as s:

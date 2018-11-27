@@ -26,7 +26,7 @@ errors = np.asarray(errors)[sorting_indices]
 
 with open("data/nn_cost_table_small.dat", "w") as outfile:
     outfile.write("{Activation function} Optimiser Architecture Cost Error\n")
-    for i in range(15):
+    for i in range(17):
         opt = optimisers[i]
         if opt != "Adam":
             alpha, gamma = opt.split(",")

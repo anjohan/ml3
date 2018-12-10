@@ -41,7 +41,7 @@ n1 = tf.layers.dense(previous1, 1)
 n2 = tf.layers.dense(previous2, 1)
 u1 = tf.sin(pi * x_tf) + t_tf * x_tf * (1 - x_tf) * n1
 u2 = tf.sin(pi * x_tf) * (1 + t_tf * n2)
-u_exact = tf.exp(-pi ** t * t_tf) * tf.sin(pi * x_tf)
+u_exact = tf.exp(-pi ** 2 * t_tf) * tf.sin(pi * x_tf)
 
 du1dx, du1dt = tf.gradients(u1, [x_tf, t_tf])
 du1dx2 = tf.gradients(du1dx, [x_tf])[0]

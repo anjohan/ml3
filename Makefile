@@ -1,5 +1,6 @@
 sources = $(shell find -name "*.f90")
-deps = sources.bib $(foreach dx,2.0E-01 1.0E-02,data/euler_$(dx).dat) data/nn_cost_table_small.dat\
+deps = sources.bib $(foreach dx,2.0E-01 1.0E-02,data/euler_$(dx).dat)\
+	   $(foreach u,1 2,data/nn_cost_table_small_$(u).dat)\
 	   data/nn_u_100.dat
 
 .PRECIOUS: *.dat
@@ -22,11 +23,11 @@ build: $(sources)
 data/euler_%.dat: build/euler
 	./$< <<< $*
 
-data/nn_cost_table_small.dat: programs/nn_params_analysis.py data/nn_costs.dat
-	python $<
+data/nn_cost_table_small_%.dat: programs/nn_params_analysis.py data/nn_costs_%.dat
+	python $< $*
 
-data/nn_costs.dat: Makefile.costs programs/nn_params.py
-	make -f $<
+data/nn_costs_%.dat: Makefile.costs programs/nn_params.py
+	make -f $< $@
 
 data/nn_u_100.dat: programs/nn_simple.py
 	python $<

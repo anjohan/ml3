@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 activation_functions = []
 optimisers = []
@@ -6,7 +7,9 @@ architectures = []
 costs = []
 errors = []
 
-with open("data/nn_costs.dat", "r") as infile:
+u_guess = sys.argv[1]
+
+with open("data/nn_costs_%s.dat" % u_guess, "r") as infile:
     for line in infile:
         if not "nan" in line:
             words = line.split()
@@ -24,7 +27,7 @@ architectures = np.asarray(architectures)[sorting_indices]
 costs = np.asarray(costs)[sorting_indices]
 errors = np.asarray(errors)[sorting_indices]
 
-with open("data/nn_cost_table_small.dat", "w") as outfile:
+with open("data/nn_cost_table_small_%s.dat" % u_guess, "w") as outfile:
     outfile.write("{Activation function} Optimiser Architecture Cost Error\n")
     for i in range(17):
         opt = optimisers[i]
@@ -39,7 +42,7 @@ with open("data/nn_cost_table_small.dat", "w") as outfile:
             % (activation_functions[i], opt, architectures[i], costs[i], errors[i])
         )
 
-with open("data/nn_cost_table.dat", "w") as outfile:
+with open("data/nn_cost_table_%s.dat" % u_guess, "w") as outfile:
     outfile.write("{Activation function} Optimiser Architecture Cost Error\n")
     for i in range(len(costs)):
         opt = optimisers[i]

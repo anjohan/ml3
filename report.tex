@@ -162,7 +162,11 @@
 \setcounter{page}{1}
 
 \begin{abstract}
-    This report deals with the numerical solution of the one-dimensional diffusion equation. The traditional Forward Euler scheme is compared with the novel approach of using neural networks. Tensorflow is used for the neural network due to its ability to handle cost functions defined in terms of the derivatives of the neural network's output with respect to its input. While Forward Euler performed better both in terms of accuracy and runtime, the neural networks also showed promising results, giving a mean squared deviation between the two sides of the diffusion equation on the order of \(10^{-3}\) after \(\num{10000}\) epochs. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best, and the number of nodes per layer proved more important than the number of layers, as shown by the three best architectures being \((100,100,100)\), \((100,100)\) and \((10,10,10,10,10)\) nodes in the hidden layers.
+    This report deals with the numerical solution of the one-dimensional diffusion equation. The traditional Forward Euler scheme is compared with the novel approach of using neural networks. Tensorflow is used for the neural network due to its ability to handle cost functions defined in terms of the derivatives of the neural network's output with respect to its input.
+
+    While Forward Euler performed better both in terms of accuracy and runtime, the neural networks also showed promising results, giving a mean squared deviation between the two sides of the diffusion equation on the order of \(10^{-6}\) after \(\num{10000}\) epochs. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best.
+
+    Finally, two different transformations of the neural network output into a solution fulfilling the initial and boundary conditions showed that it is advantageous to use as much information about the expected solution as possible when constructing such a transformation. When using a more naive approach, the number of nodes per layer proved more important than the number of layers, as shown by the three best architectures being \((100,100,100)\), \((100,100)\) and \((10,10,10,10,10)\) nodes in the hidden layers.
 \end{abstract}
 \pagestyle{fancy}
 \thispagestyle{fancy}
@@ -177,7 +181,7 @@
 % | | | | | |_| | | (_) | (_| | |_| | (__| |_| | (_) | | | |
 % |_|_| |_|\__|_|  \___/ \__,_|\__,_|\___|\__|_|\___/|_| |_|
 \section{Introduction}
-Differential equations are an important tool in physics for understanding the world around us. Classical motion is determined by Newton's laws of motion, which are ordinary differential equations, while relativistic motion and quantum mechanics are summarised in partial differential equations. Unfortunately, differential equations are hard to solve analytically, and numerical techniques are therefore employed. Historically, finite difference and finite element schemes have been used with great success. This report utilises a new approach, namely artificial neural networks, and compares it with a simple finite difference scheme.
+Differential equations are an important tool in physics for understanding the world around us. Classical motion is determined by Newton's laws of motion, which are ordinary differential equations, while relativistic motion and quantum mechanics are summarised in partial differential equations. Unfortunately, differential equations are hard to solve analytically, and numerical techniques are therefore employed. Historically, finite difference and finite element schemes have been used with great success. This report utilises a relatively new approach, namely artificial neural networks, and compares it with a simple finite difference scheme.
 
 Artificial neural networks are used to solve the diffusion equation, which models such important phenomena as heat dissipation and diffusion. Tensorflow, Google's leading framework for machine learning and artificial intelligence, is used for a high-level, intuitive, ``black box'' approach. The results are compared to the simplest finite difference scheme, namely Forward Euler.
 
@@ -231,7 +235,7 @@ Since \(\qty{u_i^0}\) is known, the function values at the subsequent timesteps 
 \begin{equation}
     u_i^{j+1} = u_i^j + \frac{\Delta t}{\Delta x^2} \qty(u_{i+1}^j - 2u_i^j + u_{i-1}^j)
 \end{equation}
-for \(i=1,\ldots,N_x-1\). The error terms are proportional to \(\Delta t\) and \(\Delta x^2\) due to a first order approximation to the temporal derivative and a second order approximation to the spatial derivative. Stability is ensured\cite{tveito} when
+for \(i=0,\ldots,N_x-1\). The error terms are proportional to \(\Delta t\) and \(\Delta x^2\) due to a first order approximation to the temporal derivative and a second order approximation to the spatial derivative. Stability is ensured\cite{tveito} when
 \begin{equation}
     \frac{\Delta t}{\Delta x^2} \leq \frac{1}{2},
 \end{equation}
@@ -252,7 +256,10 @@ In the case of the diffusion equation with our set of conditions, a natural choi
 \begin{equation}
     u(x,t) = \sin(\pi x) + tx\qty(1-x)n(x,t),
 \end{equation}
-where \(n(x,t)\) is the output from the neural network.
+where \(n(x,t)\) is the output from the neural network. A possible issue with this choice is that the neural network has to turn \(u\) into a ``dying sine'', which requires \(tx\qty(1-x)n(x,t)\) to have a sine shape while also causing \(\sin(\pi x)\) to die out. It may be better to use the knowledge of the sine shape and instead guess at
+\begin{equation}
+    u(x,t) = \sin(\pi x)\qty(1+tn(x,t)).
+\end{equation}
 
 %                      _ _
 %  _ __ ___  ___ _   _| | |_ ___
@@ -340,7 +347,7 @@ where \(n(x,t)\) is the output from the neural network.
                 \addlegendentry{\(t=\num{0.2}\)};
             \end{axis}
         \end{tikzpicture}
-        \caption{\(\num{100}\) epochs}
+        \caption{\(u(x,t)=\sin(\pi x)+tx\qty(1-x)n(x,t)\),\\ \(\num{100}\) epochs.}
     \end{subfigure}
     \begin{subfigure}[t]{0.49\textwidth}
         \centering
@@ -362,45 +369,130 @@ where \(n(x,t)\) is the output from the neural network.
                 \addlegendentry{\(t=\num{0.2}\)};
             \end{axis}
         \end{tikzpicture}
-        \caption{\(\num{10000}\) epochs}
+        \caption{\(u(x,t)=\sin(\pi x)+tx\qty(1-x)n(x,t)\),\\ \(\num{10000}\) epochs.}
     \end{subfigure}
-    \caption{Approximation to the solution of the diffusion equation provided by a neural network with \(6\) hidden layers with \(10\) nodes each. While the network gives horrible results after \(10\) epochs, the solution is seen to approach the analytic solution. As indicated in~\vref{fig:nncost}, however, it seems that the minimisation may have found a local minimum.}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                thick,
+                width=\textwidth,
+                height=2.5in,
+                xlabel={\(x\)},
+                ylabel={\(u(x,t)\)},
+                legend style={draw=none,fill=none,at={(-0.01,1.03)}, anchor=north west},
+                legend cell align=left,
+                samples=100
+            ]
+                \addlegendentry{\(\exp{-\pi^2 t}\sin(\pi x)\)};
+                \addplot+[mark=none] table[y index=4] {data/nn_u_100.dat};
+                \addlegendentry{\(t=\num{0.0}\)};
+                \addplot+[mark=none] table[y index=5] {data/nn_u_100.dat};
+                \addlegendentry{\(t=\num{0.1}\)};
+                \addplot+[mark=none] table[y index=6] {data/nn_u_100.dat};
+                \addlegendentry{\(t=\num{0.2}\)};
+            \end{axis}
+        \end{tikzpicture}
+        \caption{\(u(x,t)=\sin(\pi x)\qty(1-tn(x,t))\),\\ \(\num{100}\) epochs.}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                thick,
+                width=\textwidth,
+                height=2.5in,
+                xlabel={\(x\)},
+                ylabel={\(u(x,t)\)},
+                legend style={draw=none,fill=none,at={(0.98,0.98)}, anchor=north east},
+                legend cell align=left,
+            ]
+                \addplot+[mark=none] table[y index=4] {data/nn_u_10000.dat};
+                \addlegendentry{\(t=\num{0.0}\)};
+                \addplot+[mark=none] table[y index=5] {data/nn_u_10000.dat};
+                \addlegendentry{\(t=\num{0.1}\)};
+                \addplot+[mark=none] table[y index=6] {data/nn_u_10000.dat};
+                \addlegendentry{\(t=\num{0.2}\)};
+            \end{axis}
+        \end{tikzpicture}
+        \caption{\(u(x,t)=\sin(\pi x)\qty(1-tn(x,t))\),\\ \(\num{10000}\) epochs.}
+    \end{subfigure}
+    \caption{Approximation to the solution of the diffusion equation provided by a neural network with \(3\) hidden layers with \(100\) nodes each. While the network gives horrible results after \(10\) epochs, the solution is seen to approach the analytic solution, especially for the second choice of approximation. Evidently, it is important to choose a clever transformation of \(n(x,t)\) into a solution which fulfills the boundary and initial conditions.}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}
-        \begin{axis}[
-            thick,
-            width=5in,
-            height=3in,
-            xmode=log,
-            ymode=log,
-            xlabel={Epochs},
-            ylabel={Error},
-            legend style={draw=none, fill=none, at={(0.98,0.98)}, anchor=north east},
-            legend cell align=left
-        ]
-            \addplot+[mark=none] table[y index=1] {data/nn_cost.dat};
-            \addlegendentry{\(\frac{1}{N_xN_t}\norm{\pdv{u}{t}-\pdv[2]{u}{x}}_2^2\)};
-            \addplot+[mark=none] table[y index=2] {data/nn_cost.dat};
-            \addlegendentry{\(\frac{1}{N_xN_t}\norm{u - u_\text{exact}}_2\)};
-        \end{axis}
-    \end{tikzpicture}
-    \caption{The error in the neural network's approximation, both in terms of the cost function defined as the squared difference between the two sides of the diffusion equation and the deviation from the known, exact solution. While the cost function is eventually reduced, the graphs indicate that the minimiser may be stuck in a local minimum. It is therefore clearly advantageous to do a parameter search and try different architectures and minimisers.}\label{fig:nncost}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                thick,
+                width=5in,
+                height=2in,
+                xmode=log,
+                ymode=log,
+                xlabel={Epochs},
+                ylabel={Error},
+                legend style={draw=none, fill=none, at={(0.98,0.98)}, anchor=north east},
+                legend cell align=left
+            ]
+                \addplot+[mark=none] table[y index=1] {data/nn_cost.dat};
+                \addlegendentry{\(\frac{1}{N_xN_t}\norm{\pdv{u}{t}-\pdv[2]{u}{x}}_2^2\)};
+                \addplot+[mark=none] table[y index=2] {data/nn_cost.dat};
+                \addlegendentry{\(\frac{1}{N_xN_t}\norm{u - u_\text{exact}}_2^2\)};
+            \end{axis}
+        \end{tikzpicture}
+        \caption{\(u(x,t) = \sin(\pi x) + tx\qty(1-x)n(x,t)\)}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                thick,
+                width=5in,
+                height=2in,
+                xmode=log,
+                ymode=log,
+                xlabel={Epochs},
+                ylabel={Error},
+                legend style={draw=none, fill=none, at={(0.02,0.02)}, anchor=south west},
+                legend cell align=left
+            ]
+                \addplot+[mark=none] table[y index=3] {data/nn_cost.dat};
+                \addlegendentry{\(\frac{1}{N_xN_t}\norm{\pdv{u}{t}-\pdv[2]{u}{x}}_2^2\)};
+                \addplot+[mark=none] table[y index=4] {data/nn_cost.dat};
+                \addlegendentry{\(\frac{1}{N_xN_t}\norm{u - u_\text{exact}}_2^2\)};
+            \end{axis}
+        \end{tikzpicture}
+        \caption{\(u(x,t) = \sin(\pi x)\qty(1 + tn(x,t))\)}
+    \end{subfigure}
+    \caption{The error in the neural network's approximation, both in terms of the cost function defined as the squared difference between the two sides of the diffusion equation and the deviation from the known, exact solution. While the cost function is eventually reduced, it fluctuates, and the deviation from the exact solution does not follow the same trend. It is therefore clearly advantageous to do a parameter search and try different architectures and minimisers.}\label{fig:nncost}
 \end{figure}
 
 \subsubsection{Parameter sweep}
-Simulations similar to the ones above were run for a variety of combinations of activation functions, optimisers and network architectures. The best results (defined as having the smallest cost) are shown below. The Adam optimiser, with adaptive learning rates and momenta, clearly outperforms batch gradient descent, while the rectified linear unit and hyperbolic tangent give better results than the sigmoid function. Furthermore, it is clear that the breadth of the neural network is more important than the depth as long as the network is sufficiently deep, as shown by the networks with \((100,100,100)\) and \((100,100)\) nodes in the hidden layers performing better than networks with \((10,10,10,10,10,10,10,10)\) or \((1000)\) nodes.
+Simulations similar to the ones above were run for a variety of combinations of activation functions, optimisers and network architectures. The best results (defined as having the smallest cost) are shown below. The Adam optimiser, with adaptive learning rates and momenta, clearly outperforms batch gradient descent, while the rectified linear unit and hyperbolic tangent give better results than the sigmoid function. Furthermore, it is clear that the breadth of the neural network is more important than the depth as long as the network is sufficiently deep, as shown by the networks with \((100,100,100)\) and \((100,100)\) nodes in the hidden layers generally performing better than networks with \((10,10,10,10,10,10,10,10)\) or \((1000)\) nodes.
+
+\(\num{1170}\) parameter combinations were tested for each \(u\). Adam denotes the \lstinline{tf.train.AdamOptimizer} with default parameters, which uses an adaptive learning rate \(\alpha\) and momentum \(\gamma\), thereby outperforming batch gradient descent with fixed learning rate and momentum. The architecture gives the numbers of nodes in the hidden layers. More results are available at \href{https://github.com/anjohan/ml3/tree/master/data}{github.com/anjohan/ml3/data}.
 \begin{table}[H]
     \centering
-    \caption{Best choices of parameters, defined as giving the smallest cost function after \(\num{10000}\) epochs (``Error'' denotes the average squared deviation from the analytic solution). \(\num{1170}\) parameter combinations were tested. Adam denotes the \lstinline{tf.train.AdamOptimizer} with default parameters, which uses an adaptive learning rate \(\alpha\) and momentum \(\gamma\), thereby outperforming batch gradient descent with fixed learning rate and momentum. The architecture gives the numbers of nodes in the hidden layers. More results are available at \href{https://github.com/anjohan/ml3/tree/master/data}{github.com/anjohan/ml3/data}.}
+    \caption{\(u(x,t) = \sin(\pi x) + tx\qty(1-x)u(x,t)\).}
     \pgfplotstabletypeset[
             columns/{Activation function}/.style={string type},
             columns/{Optimiser}/.style={string type},
             columns/{Architecture}/.style={string type},
-            fixed zerofill, precision=1
+            zerofill, precision=1
         ]
-        {data/nn_cost_table_small.dat}
+        {data/nn_cost_table_small_1.dat}
+\end{table}
+\begin{table}[H]
+    \centering
+    \caption{\(u(x,t) = \sin(\pi x)\qty(1 + tu(x,t))\).}
+    \pgfplotstabletypeset[
+            columns/{Activation function}/.style={string type},
+            columns/{Optimiser}/.style={string type},
+            columns/{Architecture}/.style={string type},
+            zerofill, precision=1
+        ]
+        {data/nn_cost_table_small_2.dat}
 \end{table}
 %                                                                   _
 %  ___ _   _ _ __ ___  _ __ ___   __ _ _ __ _   _    __ _ _ __   __| |
@@ -415,7 +507,7 @@ Simulations similar to the ones above were run for a variety of combinations of 
 \section{Summary and conclusion}
 The one-dimensional diffusion equation was solved with both the traditional Forward Euler scheme and the more novel approach of using neural networks. While the neural networks converged towards the analytic solution, they were clearly beaten by Euler's method, which performed better in terms of both of accuracy and runtime. The main conclusion is, as in the previous project, to use specialised methods whenever possible, while neural networks can offer an acceptable solution which does not require much knowledge from the user --- especially when using a library as powerful as Tensorflow.
 
-A parameter sweep was performed in order to find the optimal solution of activation functions, optimisers and network architectures. Results showed that networks with fewer layers with more nodes performed better than deeper networks with fewer nodes per layer. The networks performed best when using the hyperbolic tangent as activation function and the Adam optimiser, with its adaptive learning rate and momentum.
+A parameter sweep was performed in order to find the optimal solution of activation functions, optimisers and network architectures. Results showed that networks with fewer layers with more nodes performed better than deeper networks with fewer nodes per layer. The networks performed best when using the hyperbolic tangent as activation function and the Adam optimiser, with its adaptive learning rate and momentum. Furthermore, the choice of transformation of the output from the neural network proved important for a good performance, and the choice that used the most information about the solution proved most effective, giving a mean squared deviation on the order of \(\num{e-6}\) after \(\num{10000}\) epochs.
 
 A simple extension of this project would be to try more parameter combinations, and deeper neural networks or networks with more nodes per layer. Performance issues will be mitigated if these simulations are run on a GPU.\ More substantial extensions include for example other network types, as the approximation of \(u(x,t)\) is similar to an image problem and may therefore benefit from a convolutional neural network.
 

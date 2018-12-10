@@ -1,6 +1,7 @@
 activation_functions = sigmoid relu tanh
-learning_rates = 0.00001 0.0001 0.001 0.01 0.1
-momentums = 0.00001 0.0001 0.001 0.01 0.1
+learning_rates = 0.0001 0.0001 0.001 0.01 0.1 1
+momentums = 0.0001 0.0001 0.001 0.01 0.1 1
+u_guesses = 1 2
 
 optimisers = $(foreach learning_rate,$(learning_rates),\
 			   $(foreach momentum,$(momentums),\
@@ -10,19 +11,19 @@ architectures = 10 10,10 10,10,10 10,10,10,10 10,10,10,10,10 10,10,10,10,10,10 \
 				10,10,10,10,10,10,10 10,10,10,10,10,10,10,10 \
 				1000 100 100,100 100,10,10 10,100,10 10,10,100 100,100,100
 
-$(foreach optimiser,$(optimisers),$(info $(optimiser)))
-$(foreach architecture,$(architectures),$(info $(architecture)))
+define setsinglecosts
+single_costs_$(1) = $(foreach activation_function,$(activation_functions),\
+			          $(foreach optimiser,$(optimisers),\
+				        $(foreach architecture,$(architectures),\
+				          data/nn_cost_$(activation_function)_$(optimiser)_$(architecture)_$(1).dat)))
+endef
+$(foreach u_guess,$(u_guesses),$(eval $(call setsinglecosts,$(u_guess))))
 
-single_costs = $(foreach activation_function,$(activation_functions),\
-			     $(foreach optimiser,$(optimisers),\
-				   $(foreach architecture,$(architectures),\
-				     data/nn_cost_$(activation_function)_$(optimiser)_$(architecture).dat)))
-$(foreach single_cost,$(single_costs),$(info $(single_cost)))
-
-all: data/nn_costs.dat
-
-data/nn_costs.dat: $(single_costs)
-	cat $^ > $@
+define nncost
+data/nn_costs_$(1).dat: $$(single_costs_$(1))
+	cat $$^ > $$@
+endef
+$(foreach u_guess,$(u_guesses),$(eval $(call nncost,$(u_guess))))
 
 data/nn_cost_%.dat: programs/nn_params.py
 	python $< $*

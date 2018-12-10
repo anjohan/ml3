@@ -9,7 +9,7 @@ import sys
 
 input = sys.argv[1]
 
-activation, optimiser, architecture = input.split("_")
+activation, optimiser, architecture, u_guess = input.split("_")
 
 activation = eval("tf.nn." + activation)
 
@@ -58,7 +58,10 @@ for num_nodes in architecture:
     previous = tf.layers.dense(previous, num_nodes, activation=activation)
 
 n = tf.layers.dense(previous, 1)
-u = tf.sin(pi * x_tf) + t_tf * x_tf * (1 - x_tf) * n
+if u_guess == "1":
+    u = tf.sin(pi * x_tf) + t_tf * x_tf * (1 - x_tf) * n
+else:
+    u = tf.sin(pi * x_tf) * (1 + t_tf * n)
 
 dudx, dudt = tf.gradients(u, [x_tf, t_tf])
 dudx2 = tf.gradients(dudx, [x_tf])[0]
@@ -68,6 +71,7 @@ minimisation = optimiser.minimize(cost)
 
 error = tf.math.reduce_mean((u - u_exact) ** 2)
 
+print(input.split("_")[:-1])
 init = tf.global_variables_initializer()
 with tf.Session() as s:
     s.run(init)
@@ -76,7 +80,7 @@ with tf.Session() as s:
 
     with open("data/nn_cost_" + input + ".dat", "w") as outfile:
         outfile.write(
-            " ".join(input.split("_")) + " %g %g\n" % (s.run(cost), s.run(error))
+            " ".join(input.split("_")[:-1]) + " %g %g\n" % (s.run(cost), s.run(error))
         )
     u = s.run(u)
     Nx += 1

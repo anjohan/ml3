@@ -338,7 +338,6 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 legend cell align=left,
                 samples=100
             ]
-                \addlegendentry{\(\exp{-\pi^2 t}\sin(\pi x)\)};
                 \addplot+[mark=none] table[y index=1] {data/nn_u_100.dat};
                 \addlegendentry{\(t=\num{0.0}\)};
                 \addplot+[mark=none] table[y index=2] {data/nn_u_100.dat};
@@ -384,7 +383,6 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 legend cell align=left,
                 samples=100
             ]
-                \addlegendentry{\(\exp{-\pi^2 t}\sin(\pi x)\)};
                 \addplot+[mark=none] table[y index=4] {data/nn_u_100.dat};
                 \addlegendentry{\(t=\num{0.0}\)};
                 \addplot+[mark=none] table[y index=5] {data/nn_u_100.dat};
@@ -417,7 +415,7 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
         \end{tikzpicture}
         \caption{\(u(x,t)=\sin(\pi x)\qty(1-tn(x,t))\),\\ \(\num{10000}\) epochs.}
     \end{subfigure}
-    \caption{Approximation to the solution of the diffusion equation provided by a neural network with \(3\) hidden layers with \(100\) nodes each. While the network gives horrible results after \(10\) epochs, the solution is seen to approach the analytic solution, especially for the second choice of approximation. Evidently, it is important to choose a clever transformation of \(n(x,t)\) into a solution which fulfills the boundary and initial conditions.}
+    \caption{Approximation to the solution of the diffusion equation provided by a neural network with \(3\) hidden layers with \(100\) nodes each. While the network gives horrible results after \(100\) epochs, the solution is seen to approach the analytic solution, especially for the second choice of approximation. Evidently, it is important to choose a clever transformation of \(n(x,t)\) into a solution which fulfills the boundary and initial conditions.}
 \end{figure}
 \begin{figure}[H]
     \centering

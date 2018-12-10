@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy as np
 from math import pi
 
-architecture = (100, 100, 100)
+architecture = [128]
 
 dx = 0.05
 dt = 0.005
@@ -48,8 +48,10 @@ du1dx2 = tf.gradients(du1dx, [x_tf])[0]
 du2dx, du2dt = tf.gradients(u2, [x_tf, t_tf])
 du2dx2 = tf.gradients(du2dx, [x_tf])[0]
 
-cost1 = tf.math.reduce_mean((du1dx2 - du1dt) ** 2)
-cost2 = tf.math.reduce_mean((du2dx2 - du2dt) ** 2)
+zeros = tf.zeros_like(u1)
+
+cost1 = tf.losses.mean_squared_error(zeros, du1dx2 - du1dt)
+cost2 = tf.losses.mean_squared_error(zeros, du2dx2 - du2dt)
 
 error1 = tf.math.reduce_mean((u1 - u_exact) ** 2)
 error2 = tf.math.reduce_mean((u2 - u_exact) ** 2)

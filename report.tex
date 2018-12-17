@@ -164,7 +164,7 @@
 \begin{abstract}
     This report deals with the numerical solution of the one-dimensional diffusion equation. The traditional Forward Euler scheme is compared with the novel approach of using neural networks. Tensorflow is used for the neural network due to its ability to handle cost functions defined in terms of the derivatives of the neural network's output with respect to its input.
 
-    While Forward Euler performed better both in terms of accuracy and runtime, the neural networks also showed promising results, giving a mean squared deviation between the two sides of the diffusion equation on the order of \(10^{-6}\) after \(\num{10000}\) epochs. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best.
+    While Forward Euler performed better in terms of both accuracy and runtime, the neural networks also showed promising results, giving a mean squared deviation between the two sides of the diffusion equation on the order of \(10^{-6}\) after \(\num{10000}\) epochs. A combination of the hyperbolic tangent as activation function and the Adam optimiser performed best.
 
     Finally, two different transformations of the neural network output into a solution fulfilling the initial and boundary conditions showed that it is advantageous to use as much information about the expected solution as possible when constructing such a transformation. When using a more naive approach, the number of nodes per layer proved more important than the number of layers, as shown by the three best architectures being \((100,100,100)\), \((100,100)\) and \((10,10,10,10,10)\) nodes in the hidden layers.
 \end{abstract}
@@ -452,7 +452,7 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 ymode=log,
                 xlabel={Epochs},
                 ylabel={Error},
-                legend style={draw=none, fill=none, at={(0.02,0.02)}, anchor=south west},
+                legend style={draw=none, fill=none, at={(0.98,0.98)}, anchor=north east},
                 legend cell align=left
             ]
                 \addplot+[mark=none] table[y index=1] {data/nn_cost_2.dat};
@@ -503,7 +503,7 @@ Simulations similar to the ones above were run for a variety of combinations of 
 % | (_| (_) | | | | (__| | |_| \__ \ | (_) | | | |
 %  \___\___/|_| |_|\___|_|\__,_|___/_|\___/|_| |_|
 \section{Summary and conclusion}
-The one-dimensional diffusion equation was solved with both the traditional Forward Euler scheme and the more novel approach of using neural networks. While the neural networks converged towards the analytic solution, they were clearly beaten by Euler's method, which performed better in terms of both of accuracy and runtime. The main conclusion is, as in the previous project, to use specialised methods whenever possible, while neural networks can offer an acceptable solution which does not require much knowledge from the user --- especially when using a library as powerful as Tensorflow.
+The one-dimensional diffusion equation was solved with both the traditional Forward Euler scheme and the more novel approach of using neural networks. While the neural networks converged towards the analytic solution, they were clearly beaten by Euler's method, which performed better in terms of both accuracy and runtime. The main conclusion is, as in the previous project, to use specialised methods whenever possible, while neural networks can offer an acceptable solution which does not require much knowledge from the user --- especially when using a library as powerful as Tensorflow.
 
 A parameter sweep was performed in order to find the optimal solution of activation functions, optimisers and network architectures. Results showed that networks with fewer layers with more nodes performed better than deeper networks with fewer nodes per layer. The networks performed best when using the hyperbolic tangent as activation function and the Adam optimiser, with its adaptive learning rate and momentum. Furthermore, the choice of transformation of the output from the neural network proved important for a good performance, and the choice that used the most information about the solution proved most effective, giving a mean squared deviation on the order of \(\num{e-6}\) after \(\num{10000}\) epochs.
 

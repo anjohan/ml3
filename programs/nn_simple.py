@@ -1,9 +1,11 @@
+import sys
 from tqdm import trange
 import tensorflow as tf
 import numpy as np
 from math import pi
 
-architecture = [128]
+variant = int(sys.argv[1])
+architecture = [100, 100, 100]
 
 dx = 0.05
 dt = 0.005
@@ -30,70 +32,49 @@ data = tf.convert_to_tensor(data)
 
 print(data.shape)
 
-previous1 = data
-previous2 = data
+previous = data
 
 for num_nodes in architecture:
-    previous1 = tf.layers.dense(previous1, num_nodes, activation=tf.nn.tanh)
-    previous2 = tf.layers.dense(previous2, num_nodes, activation=tf.nn.tanh)
+    previous = tf.layers.dense(previous, num_nodes, activation=tf.nn.tanh)
 
-n1 = tf.layers.dense(previous1, 1)
-n2 = tf.layers.dense(previous2, 1)
-u1 = tf.sin(pi * x_tf) + t_tf * x_tf * (1 - x_tf) * n1
-u2 = tf.sin(pi * x_tf) * (1 + t_tf * n2)
+n = tf.layers.dense(previous, 1)
+if variant == 1:
+    u = tf.sin(pi * x_tf) + t_tf * x_tf * (1 - x_tf) * n
+else:
+    u = tf.sin(pi * x_tf) * (1 + t_tf * n)
+
 u_exact = tf.exp(-pi ** 2 * t_tf) * tf.sin(pi * x_tf)
 
-du1dx, du1dt = tf.gradients(u1, [x_tf, t_tf])
-du1dx2 = tf.gradients(du1dx, [x_tf])[0]
-du2dx, du2dt = tf.gradients(u2, [x_tf, t_tf])
-du2dx2 = tf.gradients(du2dx, [x_tf])[0]
+dudx, dudt = tf.gradients(u, [x_tf, t_tf])
+dudx2 = tf.gradients(dudx, [x_tf])[0]
 
-zeros = tf.zeros_like(u1)
+zeros = tf.zeros_like(u)
 
-cost1 = tf.losses.mean_squared_error(zeros, du1dx2 - du1dt)
-cost2 = tf.losses.mean_squared_error(zeros, du2dx2 - du2dt)
+cost = tf.losses.mean_squared_error(zeros, dudx2 - dudt)
 
-error1 = tf.math.reduce_mean((u1 - u_exact) ** 2)
-error2 = tf.math.reduce_mean((u2 - u_exact) ** 2)
+error = tf.math.reduce_mean((u - u_exact) ** 2)
 
-minimiser1 = tf.train.AdamOptimizer()
-minimiser2 = tf.train.AdamOptimizer()
-minimisation1 = minimiser1.minimize(cost1)
-minimisation2 = minimiser2.minimize(cost2)
+minimiser = tf.train.AdamOptimizer()
+minimisation = minimiser.minimize(cost)
 
 x = np.arange(Nx + 1) * dx
 Nx += 1
 Nt += 1
 
 init = tf.global_variables_initializer()
-cost_file = open("data/nn_cost.dat", "w")
+cost_file = open("data/nn_cost_" + str(variant) + ".dat", "w")
 max_epochs = 10000
 with tf.Session() as s:
     init.run()
-    cost_file.write(
-        "0 %g %g %g %g\n" % (s.run(cost1), s.run(error1), s.run(cost2), s.run(error2))
-    )
+    cost_file.write("0 %g %g\n" % (s.run(cost), s.run(error)))
     for i in trange(1, int(max_epochs / 10) + 1):
         for j in range(10):
-            s.run(minimisation1)
-            s.run(minimisation2)
-        cost_file.write(
-            "%d %g %g %g %g\n"
-            % (10 * i, s.run(cost1), s.run(error1), s.run(cost2), s.run(error2))
-        )
+            s.run(minimisation)
+        cost_file.write("%d %g %g\n" % (10 * i, s.run(cost), s.run(error)))
         if i == 10 or i == max_epochs / 10:
-            u1_res = s.run(u1).reshape((Nx, Nt))
-            u2_res = s.run(u2).reshape((Nx, Nt))
+            u_res = s.run(u).reshape((Nx, Nt))
             output = np.column_stack(
-                (
-                    x,
-                    u1_res[:, 0],
-                    u1_res[:, int(Nt / 2)],
-                    u1_res[:, -1],
-                    u2_res[:, 0],
-                    u2_res[:, int(Nt / 2)],
-                    u2_res[:, -1],
-                )
+                (x, u_res[:, 0], u_res[:, int(Nt / 2)], u_res[:, -1])
             )
-            np.savetxt("data/nn_u_%d.dat" % (10 * i), output)
+            np.savetxt("data/nn_u_%d_%d.dat" % (10 * i, variant), output)
 cost_file.close()

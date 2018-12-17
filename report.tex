@@ -235,7 +235,7 @@ Since \(\qty{u_i^0}\) is known, the function values at the subsequent timesteps 
 \begin{equation}
     u_i^{j+1} = u_i^j + \frac{\Delta t}{\Delta x^2} \qty(u_{i+1}^j - 2u_i^j + u_{i-1}^j)
 \end{equation}
-for \(i=0,\ldots,N_x-1\). The error terms are proportional to \(\Delta t\) and \(\Delta x^2\) due to a first order approximation to the temporal derivative and a second order approximation to the spatial derivative. Stability is ensured\cite{tveito} when
+for \(i=1,\ldots,N_x-1\). The error terms are proportional to \(\Delta t\) and \(\Delta x^2\) due to a first order approximation to the temporal derivative and a second order approximation to the spatial derivative. Stability is ensured\cite{tveito} when
 \begin{equation}
     \frac{\Delta t}{\Delta x^2} \leq \frac{1}{2},
 \end{equation}
@@ -250,7 +250,7 @@ The simplest approach is simply to use the average square of the difference betw
 \end{equation}
 It seems difficult to differentiate this cost function with respect to the weights and biases of the neural network. I have therefore chosen to use Tensorflow\cite{tensorflow} for this project, since it contains functionality for calculating automatic derivatives (something my otherwise brilliant Fortran network lacks).
 
-Another difficulty is to fulfill the initial and boundary conditions. One approach may be to add terms to the cost function which penalise approximations which do not fulfill the initial and boundary conditions. Another approach, which is found more often in literature\cite{nnde} and therefore employed in this report, is to not use the output of the neural network directly, but rather to combine a neural network with other functions in such a way that the initial and boundary conditions are guaranteed to be fulfilled.
+Another difficulty is to fulfill the initial and boundary conditions. One approach may be to add terms to the cost function which penalise approximations that do not fulfill the initial and boundary conditions. Another approach, which is found more often in literature\cite{nnde} and therefore employed in this report, is to not use the output of the neural network directly, but rather to combine a neural network with other functions in such a way that the initial and boundary conditions are guaranteed to be fulfilled.
 
 In the case of the diffusion equation with our set of conditions, a natural choice is
 \begin{equation}
@@ -338,11 +338,11 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 legend cell align=left,
                 samples=100
             ]
-                \addplot+[mark=none] table[y index=1] {data/nn_u_100.dat};
+                \addplot+[mark=none] table[y index=1] {data/nn_u_100_1.dat};
                 \addlegendentry{\(t=\num{0.0}\)};
-                \addplot+[mark=none] table[y index=2] {data/nn_u_100.dat};
+                \addplot+[mark=none] table[y index=2] {data/nn_u_100_1.dat};
                 \addlegendentry{\(t=\num{0.1}\)};
-                \addplot+[mark=none] table[y index=3] {data/nn_u_100.dat};
+                \addplot+[mark=none] table[y index=3] {data/nn_u_100_1.dat};
                 \addlegendentry{\(t=\num{0.2}\)};
             \end{axis}
         \end{tikzpicture}
@@ -360,11 +360,11 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 legend style={draw=none,fill=none,at={(0.98,0.98)}, anchor=north east},
                 legend cell align=left,
             ]
-                \addplot+[mark=none] table[y index=1] {data/nn_u_10000.dat};
+                \addplot+[mark=none] table[y index=1] {data/nn_u_10000_1.dat};
                 \addlegendentry{\(t=\num{0.0}\)};
-                \addplot+[mark=none] table[y index=2] {data/nn_u_10000.dat};
+                \addplot+[mark=none] table[y index=2] {data/nn_u_10000_1.dat};
                 \addlegendentry{\(t=\num{0.1}\)};
-                \addplot+[mark=none] table[y index=3] {data/nn_u_10000.dat};
+                \addplot+[mark=none] table[y index=3] {data/nn_u_10000_1.dat};
                 \addlegendentry{\(t=\num{0.2}\)};
             \end{axis}
         \end{tikzpicture}
@@ -383,11 +383,11 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 legend cell align=left,
                 samples=100
             ]
-                \addplot+[mark=none] table[y index=4] {data/nn_u_100.dat};
+                \addplot+[mark=none] table[y index=1] {data/nn_u_100_2.dat};
                 \addlegendentry{\(t=\num{0.0}\)};
-                \addplot+[mark=none] table[y index=5] {data/nn_u_100.dat};
+                \addplot+[mark=none] table[y index=2] {data/nn_u_100_2.dat};
                 \addlegendentry{\(t=\num{0.1}\)};
-                \addplot+[mark=none] table[y index=6] {data/nn_u_100.dat};
+                \addplot+[mark=none] table[y index=3] {data/nn_u_100_2.dat};
                 \addlegendentry{\(t=\num{0.2}\)};
             \end{axis}
         \end{tikzpicture}
@@ -405,11 +405,11 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 legend style={draw=none,fill=none,at={(0.98,0.98)}, anchor=north east},
                 legend cell align=left,
             ]
-                \addplot+[mark=none] table[y index=4] {data/nn_u_10000.dat};
+                \addplot+[mark=none] table[y index=1] {data/nn_u_10000_2.dat};
                 \addlegendentry{\(t=\num{0.0}\)};
-                \addplot+[mark=none] table[y index=5] {data/nn_u_10000.dat};
+                \addplot+[mark=none] table[y index=2] {data/nn_u_10000_2.dat};
                 \addlegendentry{\(t=\num{0.1}\)};
-                \addplot+[mark=none] table[y index=6] {data/nn_u_10000.dat};
+                \addplot+[mark=none] table[y index=3] {data/nn_u_10000_2.dat};
                 \addlegendentry{\(t=\num{0.2}\)};
             \end{axis}
         \end{tikzpicture}
@@ -433,9 +433,9 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 legend style={draw=none, fill=none, at={(0.98,0.98)}, anchor=north east},
                 legend cell align=left
             ]
-                \addplot+[mark=none] table[y index=1] {data/nn_cost.dat};
+                \addplot+[mark=none] table[y index=1] {data/nn_cost_1.dat};
                 \addlegendentry{\(\frac{1}{N_xN_t}\norm{\pdv{u}{t}-\pdv[2]{u}{x}}_2^2\)};
-                \addplot+[mark=none] table[y index=2] {data/nn_cost.dat};
+                \addplot+[mark=none] table[y index=2] {data/nn_cost_1.dat};
                 \addlegendentry{\(\frac{1}{N_xN_t}\norm{u - u_\text{exact}}_2^2\)};
             \end{axis}
         \end{tikzpicture}
@@ -455,9 +455,9 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
                 legend style={draw=none, fill=none, at={(0.02,0.02)}, anchor=south west},
                 legend cell align=left
             ]
-                \addplot+[mark=none] table[y index=3] {data/nn_cost.dat};
+                \addplot+[mark=none] table[y index=1] {data/nn_cost_2.dat};
                 \addlegendentry{\(\frac{1}{N_xN_t}\norm{\pdv{u}{t}-\pdv[2]{u}{x}}_2^2\)};
-                \addplot+[mark=none] table[y index=4] {data/nn_cost.dat};
+                \addplot+[mark=none] table[y index=2] {data/nn_cost_2.dat};
                 \addlegendentry{\(\frac{1}{N_xN_t}\norm{u - u_\text{exact}}_2^2\)};
             \end{axis}
         \end{tikzpicture}
@@ -467,12 +467,12 @@ where \(n(x,t)\) is the output from the neural network. A possible issue with th
 \end{figure}
 
 \subsubsection{Parameter sweep}
-Simulations similar to the ones above were run for a variety of combinations of activation functions, optimisers and network architectures. The best results (defined as having the smallest cost) are shown below. The Adam optimiser, with adaptive learning rates and momenta, clearly outperforms batch gradient descent, while the rectified linear unit and hyperbolic tangent give better results than the sigmoid function. Furthermore, it is clear that the breadth of the neural network is more important than the depth as long as the network is sufficiently deep, as shown by the networks with \((100,100,100)\) and \((100,100)\) nodes in the hidden layers generally performing better than networks with \((10,10,10,10,10,10,10,10)\) or \((1000)\) nodes.
+Simulations similar to the ones above were run for a variety of combinations of activation functions, optimisers and network architectures. The best results (defined as having the smallest cost) are shown below. The Adam optimiser, with adaptive learning rates and momenta, clearly outperforms batch gradient descent, while the rectified linear unit and hyperbolic tangent give better results than the sigmoid function. Furthermore, when using an ``uninformed'' \(n(x,t) \mapsto u(x,t)\) (\vref*{table1}) it is clear that the breadth of the neural network is more important than the depth as long as the network is sufficiently deep, as shown by the networks with \((100,100,100)\) and \((100,100)\) nodes in the hidden layers generally performing better than networks with \((10,10,10,10,10,10,10,10)\) or \((1000)\) nodes.
 
 \(\num{1170}\) parameter combinations were tested for each \(u\). Adam denotes the \lstinline{tf.train.AdamOptimizer} with default parameters, which uses an adaptive learning rate \(\alpha\) and momentum \(\gamma\), thereby outperforming batch gradient descent with fixed learning rate and momentum. The architecture gives the numbers of nodes in the hidden layers. More results are available at \href{https://github.com/anjohan/ml3/tree/master/data}{github.com/anjohan/ml3/data}.
 \begin{table}[H]
     \centering
-    \caption{\(u(x,t) = \sin(\pi x) + tx\qty(1-x)u(x,t)\).}
+    \caption{\(u(x,t) = \sin(\pi x) + tx\qty(1-x)u(x,t)\).}\label{table1}
     \pgfplotstabletypeset[
             columns/{Activation function}/.style={string type},
             columns/{Optimiser}/.style={string type},
